@@ -1,0 +1,27 @@
+# Sanjivani AI - ML Training Docker Image
+FROM python:3.10-slim
+
+WORKDIR /app
+
+# Install system dependencies for ML
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    libpq-dev \
+    libgl1-mesa-glx \
+    libglib2.0-0 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements and install
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy source code
+COPY src/ ./src/
+COPY scripts/ ./scripts/
+COPY .env.example .env
+
+# Create directories
+RUN mkdir -p /app/models /app/data /app/logs
+
+# Default command
+CMD ["python", "-m", "src.nlp.train"]
