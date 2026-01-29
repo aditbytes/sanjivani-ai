@@ -162,7 +162,7 @@ MIT License - see [LICENSE](LICENSE) file.
 
 ## �‍💻 Developers
 
-1. Aditya
+1. Aditya CS STUDENT @ IIT PATNA
 
 ---
 
