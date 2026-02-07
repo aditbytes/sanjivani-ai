@@ -163,7 +163,7 @@ MIT License - see [LICENSE](LICENSE) file.
 ## �‍💻 Developers
 
 1. Aditya CS STUDENT @ IIT PATNA
-
+2. 
 ---
 
 ## �🙏 Acknowledgments
