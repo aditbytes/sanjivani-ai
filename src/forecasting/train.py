@@ -47,7 +47,19 @@ def train_forecasting_models(
     # Train LSTM
     logger.info("Training LSTM model...")
     lstm = LSTMForecaster()
-    y_combined = list(zip(y["food_packets"], y["medical_kits"], y["rescue_boats"], y["shelters"]))
+    
+    # Prepare LSTM data - need proper numpy arrays
+    import numpy as np
+    y_combined = np.array([
+        [y["food_packets"][i], y["medical_kits"][i], y["rescue_boats"][i], y["shelters"][i]]
+        for i in range(len(y["food_packets"]))
+    ], dtype=np.float32)
+    
+    # Reshape X_temporal for LSTM (samples, timesteps, features)
+    if len(X_temporal.shape) == 2:
+        # Add timestep dimension if needed
+        X_temporal = X_temporal.reshape(X_temporal.shape[0], 24, -1)
+    
     lstm.train(X_temporal, y_combined, epochs=50)
     lstm.save(str(output_dir / "lstm_model.h5"))
     
