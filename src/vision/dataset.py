@@ -56,6 +56,9 @@ class SatelliteDataset(Dataset):
                 mask_path = self.mask_dir / item["mask_file"]
                 mask = cv2.imread(str(mask_path), cv2.IMREAD_GRAYSCALE)
                 mask = cv2.resize(mask, (self.image_size, self.image_size), interpolation=cv2.INTER_NEAREST)
+                # Normalize mask values: convert 0-255 range to class indices 0/1
+                # Values > 127 are considered flood (class 1), others background (class 0)
+                mask = (mask > 127).astype(np.uint8)
             
             # Apply transforms
             if self.transform:
@@ -69,7 +72,7 @@ class SatelliteDataset(Dataset):
             result = {"image": image_tensor, "image_id": item.get("id", str(idx))}
             
             if mask is not None:
-                result["mask"] = torch.from_numpy(mask).long()
+                result["mask"] = torch.from_numpy(mask.astype(np.int64)).long()
             
             return result
             

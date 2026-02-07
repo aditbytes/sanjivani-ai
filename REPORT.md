@@ -1,8 +1,8 @@
 # 📊 Sanjivani AI - Comprehensive Project Report
 
-> **Generated**: February 7, 2026  
+> **Generated**: February 8, 2026  
 > **Status**: ✅ **Production-Ready**  
-> **Version**: 1.0.0
+> **Version**: 1.2.0
 
 ---
 
@@ -127,11 +127,12 @@
 - **Inference Time**: ~17ms per tweet
 
 ### U-Net Vision Details
-- **Architecture**: U-Net with ResNet34 encoder
+- **Architecture**: U-Net with ResNet50 encoder
 - **Training Data**: 200 synthetic satellite images
 - **Validation Data**: 50 images
-- **Final Val Loss**: 0.0457 (90% improvement from epoch 1)
-- **Input Size**: 256x256 RGB
+- **Final Val IoU**: 0.9972 (99.72%)
+- **Input Size**: 512x512 RGB
+- **Classes**: Binary (background/flood)
 
 ---
 
@@ -484,4 +485,4 @@ docker compose -f docker-compose.prod.yml up -d
 
 ---
 
-*Last Updated: February 7, 2026*
+*Last Updated: February 8, 2026*

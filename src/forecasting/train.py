@@ -21,6 +21,7 @@ settings = get_settings()
 def train_forecasting_models(
     historical_data: List[Dict] = None,
     output_dir: Path = None,
+    train_lstm: bool = True,
 ) -> Dict:
     """Train XGBoost and LSTM forecasting models."""
     output_dir = output_dir or settings.models_dir / "forecasting"
@@ -45,26 +46,34 @@ def train_forecasting_models(
     xgb.save(output_dir)
     
     # Train LSTM
-    logger.info("Training LSTM model...")
-    lstm = LSTMForecaster()
-    
-    # Prepare LSTM data - need proper numpy arrays
-    import numpy as np
-    y_combined = np.array([
-        [y["food_packets"][i], y["medical_kits"][i], y["rescue_boats"][i], y["shelters"][i]]
-        for i in range(len(y["food_packets"]))
-    ], dtype=np.float32)
-    
-    # Reshape X_temporal for LSTM (samples, timesteps, features)
-    if len(X_temporal.shape) == 2:
-        # Add timestep dimension if needed
-        X_temporal = X_temporal.reshape(X_temporal.shape[0], 24, -1)
-    
-    lstm.train(X_temporal, y_combined, epochs=50)
-    lstm.save(str(output_dir / "lstm_model.h5"))
+    if train_lstm:
+        logger.info("Training LSTM model...")
+        lstm = LSTMForecaster()
+        
+        # Prepare LSTM data - need proper numpy arrays
+        import numpy as np
+        y_combined = np.array([
+            [y["food_packets"][i], y["medical_kits"][i], y["rescue_boats"][i], y["shelters"][i]]
+            for i in range(len(y["food_packets"]))
+        ], dtype=np.float32)
+        
+        # Reshape X_temporal for LSTM (samples, timesteps, features)
+        if len(X_temporal.shape) == 2:
+            # Add timestep dimension if needed
+            X_temporal = X_temporal.reshape(X_temporal.shape[0], 24, -1)
+        
+        lstm.train(X_temporal, y_combined, epochs=50)
+        lstm.save(str(output_dir / "lstm_model.h5"))
+    else:
+        logger.info("Skipping LSTM training as requested.")
     
     return {"status": "success", "samples": len(historical_data)}
 
 
 if __name__ == "__main__":
-    train_forecasting_models()
+    import argparse
+    parser = argparse.ArgumentParser(description="Train forecasting models")
+    parser.add_argument("--no-lstm", action="store_true", help="Skip LSTM training")
+    args = parser.parse_args()
+    
+    train_forecasting_models(train_lstm=not args.no_lstm)

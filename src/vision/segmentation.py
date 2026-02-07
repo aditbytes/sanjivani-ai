@@ -17,8 +17,8 @@ from src.utils.logger import get_logger
 logger = get_logger(__name__)
 settings = get_settings()
 
-# Segmentation classes
-SEGMENTATION_CLASSES = ["background", "water", "cloud"]
+# Segmentation classes (binary: background vs flood)
+SEGMENTATION_CLASSES = ["background", "flood"]
 NUM_CLASSES = len(SEGMENTATION_CLASSES)
 
 

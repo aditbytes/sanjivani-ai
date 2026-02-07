@@ -74,6 +74,8 @@ def train_segmentation(
     val_data: List[Dict],
     image_dir: Path,
     mask_dir: Path,
+    val_image_dir: Path = None,
+    val_mask_dir: Path = None,
     output_dir: Path = None,
     epochs: int = 50,
     batch_size: int = 8,
@@ -85,11 +87,15 @@ def train_segmentation(
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
     
+    # Use train directories for val if not specified
+    val_image_dir = val_image_dir or image_dir
+    val_mask_dir = val_mask_dir or mask_dir
+    
     device = device or ("cuda" if torch.cuda.is_available() else "cpu")
     
     # Create datasets
     train_dataset = SatelliteDataset(train_data, image_dir, mask_dir, get_train_transform())
-    val_dataset = SatelliteDataset(val_data, image_dir, mask_dir, get_val_transform())
+    val_dataset = SatelliteDataset(val_data, val_image_dir, val_mask_dir, get_val_transform())
     
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
     val_loader = DataLoader(val_dataset, batch_size=batch_size)
@@ -125,4 +131,41 @@ def train_segmentation(
 
 
 if __name__ == "__main__":
-    logger.info("Run with sample data using scripts/generate_sample_data.py first")
+    import os
+    from src.data.loaders import load_json
+    
+    # Load satellite metadata for config
+    satellite_dir = settings.data_dir / "satellite"
+    metadata = load_json(satellite_dir / "metadata.json")
+    
+    if not metadata:
+        logger.info("Run with sample data using scripts/generate_satellite_data.py first")
+    else:
+        # Build train/val data from directory listing
+        train_image_dir = satellite_dir / "train" / "images"
+        train_mask_dir = satellite_dir / "train" / "masks"
+        val_image_dir = satellite_dir / "val" / "images"
+        val_mask_dir = satellite_dir / "val" / "masks"
+        
+        if not train_image_dir.exists():
+            logger.error("Training image directory not found")
+        else:
+            # Create data entries from filenames - use correct keys for SatelliteDataset
+            # Image files are like train_0000.png, mask files are like train_0000_mask.png
+            train_files = sorted([f for f in os.listdir(train_image_dir) if f.endswith('.png')])
+            val_files = sorted([f for f in os.listdir(val_image_dir) if f.endswith('.png')])
+            
+            train_data = [{"id": f.replace('.png', ''), "image_file": f, "mask_file": f.replace('.png', '_mask.png')} for f in train_files]
+            val_data = [{"id": f.replace('.png', ''), "image_file": f, "mask_file": f.replace('.png', '_mask.png')} for f in val_files]
+            
+            logger.info(f"Training with {len(train_data)} train and {len(val_data)} val samples")
+            train_segmentation(
+                train_data=train_data,
+                val_data=val_data,
+                image_dir=train_image_dir,
+                mask_dir=train_mask_dir,
+                val_image_dir=val_image_dir,
+                val_mask_dir=val_mask_dir,
+                epochs=10,
+                batch_size=4,
+            )
