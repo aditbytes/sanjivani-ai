@@ -5,7 +5,7 @@ Tests for helper utilities.
 import pytest
 
 from src.utils.helpers import (
-    clean_text, truncate_text, BIHAR_DISTRICTS,
+    normalize_whitespace, truncate_text, BIHAR_DISTRICTS,
     get_district_coordinates, get_all_district_names, format_timestamp,
 )
 
@@ -13,9 +13,9 @@ from src.utils.helpers import (
 class TestTextHelpers:
     """Test text utility functions."""
     
-    def test_clean_text(self):
+    def test_normalize_whitespace(self):
         text = "  Hello   World  "
-        result = clean_text(text)
+        result = normalize_whitespace(text)
         assert result == "Hello World"
     
     def test_truncate_text(self):
